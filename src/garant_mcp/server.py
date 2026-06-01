@@ -23,6 +23,11 @@ from .tools import (
     get_usage_limits,
     download_image,
     download_formula,
+    save_text_document,
+    load_text_document,
+    list_saved_documents,
+    create_case,
+    copy_template_file,
 )
 from .resources import (
     get_document_resource,
@@ -176,6 +181,46 @@ async def download_image_tool(object_id: int) -> str:
 async def download_formula_tool(text: str) -> str:
     """Download a formula as an image."""
     return await download_formula(text)
+
+
+@mcp.tool()
+async def save_text_document_tool(
+    content: str,
+    filename: str,
+    category: str = "output",
+) -> str:
+    """Save text document to results directory."""
+    return await save_text_document(content, filename, category)
+
+
+@mcp.tool()
+async def load_text_document_tool(
+    filename: str,
+    category: str = "output",
+) -> str:
+    """Load text document from results directory."""
+    return await load_text_document(filename, category)
+
+
+@mcp.tool()
+async def list_saved_documents_tool(category: str = "output") -> str:
+    """List documents in results directory."""
+    return await list_saved_documents(category)
+
+
+@mcp.tool()
+async def create_case_tool(case_name: str) -> str:
+    """Create folder structure for a new case."""
+    return await create_case(case_name)
+
+
+@mcp.tool()
+async def copy_template_file_tool(
+    template_name: str,
+    destination: str,
+) -> str:
+    """Copy template file to destination."""
+    return await copy_template_file(template_name, destination)
 
 
 # === Resources Registration ===

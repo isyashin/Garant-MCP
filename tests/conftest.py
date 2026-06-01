@@ -31,7 +31,7 @@ async def client(token):
 @pytest.fixture
 def sample_topic():
     """Sample document topic ID for testing."""
-    return 12138291  # ЖК РФ
+    return 10900200  # НК РФ часть 1 (non-constitutional)
 
 
 @pytest.fixture

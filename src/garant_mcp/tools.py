@@ -6,6 +6,10 @@ from pathlib import Path
 from typing import Optional
 from .client import GarantClient
 from .config import Config
+from .file_tools import (
+    save_document, load_document, list_documents,
+    create_case_folder, copy_template, create_log
+)
 
 logger = logging.getLogger(__name__)
 
@@ -369,4 +373,101 @@ async def download_formula(text: str) -> str:
         return str(path)
     except Exception as e:
         logger.error(f"Formula error: {e}")
+        return f"Error: {str(e)}"
+
+
+async def save_text_document(content: str, filename: str, category: str = "output") -> str:
+    """Save text document to results directory.
+    
+    Args:
+        content: Document content.
+        filename: File name.
+        category: Directory category (cases/templates/documents/practice/client/output).
+    
+    Returns:
+        Path to saved file.
+    """
+    try:
+        filepath = save_document(content, filename, category)
+        create_log("general", f"Saved document: {filename}", f"Category: {category}")
+        return f"Document saved to: {filepath}"
+    except Exception as e:
+        logger.error(f"Save document error: {e}")
+        return f"Error: {str(e)}"
+
+
+async def load_text_document(filename: str, category: str = "output") -> str:
+    """Load text document from results directory.
+    
+    Args:
+        filename: File name.
+        category: Directory category.
+    
+    Returns:
+        Document content or error message.
+    """
+    try:
+        content = load_document(filename, category)
+        if content is None:
+            return f"Document '{filename}' not found in {category}"
+        return content
+    except Exception as e:
+        logger.error(f"Load document error: {e}")
+        return f"Error: {str(e)}"
+
+
+async def list_saved_documents(category: str = "output") -> str:
+    """List documents in results directory.
+    
+    Args:
+        category: Directory category.
+    
+    Returns:
+        JSON string with document list.
+    """
+    try:
+        documents = list_documents(category)
+        return json.dumps({
+            "category": category,
+            "documents": documents,
+            "count": len(documents)
+        }, ensure_ascii=False, indent=2)
+    except Exception as e:
+        logger.error(f"List documents error: {e}")
+        return json.dumps({"error": str(e)}, ensure_ascii=False)
+
+
+async def create_case(case_name: str) -> str:
+    """Create folder structure for a new case.
+    
+    Args:
+        case_name: Name of the case.
+    
+    Returns:
+        Path to created case folder.
+    """
+    try:
+        case_path = create_case_folder(case_name)
+        create_log(case_name, "Case folder created", f"Path: {case_path}")
+        return f"Case folder created: {case_path}"
+    except Exception as e:
+        logger.error(f"Create case error: {e}")
+        return f"Error: {str(e)}"
+
+
+async def copy_template_file(template_name: str, destination: str) -> str:
+    """Copy template file to destination.
+    
+    Args:
+        template_name: Source template file name.
+        destination: Destination path.
+    
+    Returns:
+        Path to copied file.
+    """
+    try:
+        dest_path = copy_template(template_name, destination)
+        return f"Template copied to: {dest_path}"
+    except Exception as e:
+        logger.error(f"Copy template error: {e}")
         return f"Error: {str(e)}"

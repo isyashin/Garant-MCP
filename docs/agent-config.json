@@ -1,0 +1,39 @@
+{
+  "name": "garant-lawyer-agent",
+  "version": "1.0.0",
+  "description": "Агент для подготовки юридических документов на основе системы Гарант",
+  "author": "Garant MCP Team",
+  "prompt": "docs/AGENT_PROMPT.md",
+  "tools": [
+    "search_documents",
+    "get_document_info",
+    "export_document",
+    "search_judicial_practice",
+    "create_legal_document",
+    "check_document_updates"
+  ],
+  "workflows": {
+    "legal_document_preparation": {
+      "description": "Подготовка юридического документа",
+      "steps": [
+        "Изучить законодательство по теме",
+        "Найти образцы документов",
+        "Изучить судебную практику",
+        "Задать уточняющие вопросы пользователю",
+        "Подготовить проект документа",
+        "Проверить и сохранить"
+      ]
+    },
+    "legal_consultation": {
+      "description": "Юридическая консультация",
+      "steps": [
+        "Проанализировать ситуацию",
+        "Найти применимые нормы",
+        "Изучить практику",
+        "Дать обоснованный ответ"
+      ]
+    }
+  },
+  "output_dir": "results/output",
+  "temp_dir": "results/temp"
+}
