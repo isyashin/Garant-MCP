@@ -45,6 +45,66 @@ LOG_LEVEL=INFO
 
 Сервер запускается с STDIO транспортом для работы с opencode.
 
+## Примеры использования
+
+### Поиск документов
+
+```python
+from garant_mcp.tools import search_documents
+
+result = await search_documents("налог на прибыль")
+```
+
+### Получение информации о документе
+
+```python
+from garant_mcp.tools import get_document_info
+
+result = await get_document_info(70291312)  # НК РФ
+```
+
+### Экспорт документа в PDF
+
+```python
+from garant_mcp.tools import export_document_pdf
+
+result = await export_document_pdf(70291312)
+# Сохраняет в exports/70291312.pdf
+```
+
+### Постановка ссылок в тексте
+
+```python
+from garant_mcp.tools import create_legal_document
+
+html_with_links = await create_legal_document(
+    "В соответствии со статьей 36 ЖК РФ..."
+)
+```
+
+### Поиск судебной практики
+
+```python
+from garant_mcp.tools import search_judicial_practice
+
+result = await search_judicial_practice(
+    text="неубранный снег управляющая компания",
+    count=5
+)
+```
+
+### PRIME новости
+
+```python
+from garant_mcp.tools import get_prime_news
+
+result = await get_prime_news(
+    categories=[24],  # Федеральное законодательство
+    from_date="2025-05-01",
+    to_date="2025-06-01"
+)
+```
+
 ## Тестирование
 
 ```powershell

@@ -8,7 +8,11 @@ from .client import GarantClient
 from .config import Config
 
 logger = logging.getLogger(__name__)
-client = GarantClient()
+
+
+def _get_client() -> GarantClient:
+    """Get a fresh GarantClient instance."""
+    return GarantClient()
 
 
 async def search_documents(
@@ -34,7 +38,7 @@ async def search_documents(
         JSON string with search results including documents list and total pages.
     """
     try:
-        result = await client.search_documents(
+        result = await _get_client().search_documents(
             text=text,
             env=env,
             sort=sort,
@@ -59,7 +63,7 @@ async def get_document_info(topic: int) -> str:
         JSON string with document metadata (name, status, type, dates, etc.).
     """
     try:
-        result = await client.get_document_info(topic)
+        result = await _get_client().get_document_info(topic)
         return json.dumps(result, ensure_ascii=False, indent=2)
     except Exception as e:
         logger.error(f"Document info error for topic {topic}: {e}")
@@ -81,7 +85,7 @@ async def get_document_snippets(
         JSON string with snippets showing relevance and context.
     """
     try:
-        result = await client.get_snippets(text=text, topic=topic)
+        result = await _get_client().get_snippets(text=text, topic=topic)
         return json.dumps(result, ensure_ascii=False, indent=2)
     except Exception as e:
         logger.error(f"Snippets error: {e}")
@@ -105,7 +109,7 @@ async def create_legal_document(
         HTML string with embedded hyperlinks to relevant laws.
     """
     try:
-        result = await client.create_hyperlinks(text=text, base_url=base_url)
+        result = await _get_client().create_hyperlinks(text=text, base_url=base_url)
         return result.get("text", "")
     except Exception as e:
         logger.error(f"Hyperlinks error: {e}")
@@ -129,7 +133,7 @@ async def check_document_updates(
         JSON string with modification status for each document.
     """
     try:
-        result = await client.find_modified(
+        result = await _get_client().find_modified(
             topics=topics,
             mod_date=mod_date,
             need_events=need_events,
@@ -153,7 +157,7 @@ async def export_document_rtf(topic: int) -> str:
     try:
         output_dir = Path(Config.EXPORT_DIR)
         output_dir.mkdir(exist_ok=True)
-        path = await client.export_document_rtf(topic, output_dir)
+        path = await _get_client().export_document_rtf(topic, output_dir)
         return str(path)
     except Exception as e:
         logger.error(f"Export RTF error for topic {topic}: {e}")
@@ -173,7 +177,7 @@ async def export_document_pdf(topic: int) -> str:
     try:
         output_dir = Path(Config.EXPORT_DIR)
         output_dir.mkdir(exist_ok=True)
-        path = await client.export_document_pdf(topic, output_dir)
+        path = await _get_client().export_document_pdf(topic, output_dir)
         return str(path)
     except Exception as e:
         logger.error(f"Export PDF error for topic {topic}: {e}")
@@ -193,7 +197,7 @@ async def export_document_odt(topic: int) -> str:
     try:
         output_dir = Path(Config.EXPORT_DIR)
         output_dir.mkdir(exist_ok=True)
-        path = await client.export_document_odt(topic, output_dir)
+        path = await _get_client().export_document_odt(topic, output_dir)
         return str(path)
     except Exception as e:
         logger.error(f"Export ODT error for topic {topic}: {e}")
@@ -211,7 +215,7 @@ async def export_document_html(topic: int) -> str:
         JSON string with HTML pages of the document.
     """
     try:
-        result = await client.export_document_html(topic)
+        result = await _get_client().export_document_html(topic)
         return json.dumps(result, ensure_ascii=False, indent=2)
     except Exception as e:
         logger.error(f"Export HTML error for topic {topic}: {e}")
@@ -230,7 +234,7 @@ async def export_block_html(topic: int, entry: int) -> str:
         JSON string with HTML content of the block.
     """
     try:
-        result = await client.export_block_html(topic, entry)
+        result = await _get_client().export_block_html(topic, entry)
         return json.dumps(result, ensure_ascii=False, indent=2)
     except Exception as e:
         logger.error(f"Export block error for topic {topic} entry {entry}: {e}")
@@ -245,7 +249,7 @@ async def get_prime_categories() -> str:
         JSON string with category tree.
     """
     try:
-        result = await client.get_prime_categories()
+        result = await _get_client().get_prime_categories()
         return json.dumps(result, ensure_ascii=False, indent=2)
     except Exception as e:
         logger.error(f"PRIME categories error: {e}")
@@ -271,7 +275,7 @@ async def get_prime_news(
         JSON string with news items.
     """
     try:
-        result = await client.get_prime_news(
+        result = await _get_client().get_prime_news(
             categories=categories,
             from_date=from_date,
             to_date=to_date,
@@ -302,7 +306,7 @@ async def search_judicial_practice(
     try:
         if kind is None:
             kind = ["301", "302"]
-        result = await client.search_judicial_practice(
+        result = await _get_client().search_judicial_practice(
             text=text,
             count=count,
             kind=kind,
@@ -321,7 +325,7 @@ async def get_usage_limits() -> str:
         JSON string with remaining quotas for all endpoint types.
     """
     try:
-        result = await client.get_limits()
+        result = await _get_client().get_limits()
         return json.dumps(result, ensure_ascii=False, indent=2)
     except Exception as e:
         logger.error(f"Limits error: {e}")
@@ -341,7 +345,7 @@ async def download_image(object_id: int) -> str:
     try:
         output_dir = Path(Config.EXPORT_DIR)
         output_dir.mkdir(exist_ok=True)
-        path = await client.get_image(object_id, output_dir)
+        path = await _get_client().get_image(object_id, output_dir)
         return str(path)
     except Exception as e:
         logger.error(f"Image error for object_id {object_id}: {e}")
@@ -361,7 +365,7 @@ async def download_formula(text: str) -> str:
     try:
         output_dir = Path(Config.EXPORT_DIR)
         output_dir.mkdir(exist_ok=True)
-        path = await client.get_formula(text, output_dir)
+        path = await _get_client().get_formula(text, output_dir)
         return str(path)
     except Exception as e:
         logger.error(f"Formula error: {e}")

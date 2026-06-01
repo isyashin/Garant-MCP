@@ -14,8 +14,8 @@ class Config:
     """Application configuration."""
     
     # API Configuration
-    GARANT_TOKEN = os.getenv("GARANT_TOKEN", "")
-    GARANT_BASE_URL = os.getenv("GARANT_BASE_URL", "https://api.garant.ru/v2")
+    GARANT_TOKEN = os.getenv("GARANT_TOKEN", "").strip()
+    GARANT_BASE_URL = os.getenv("GARANT_BASE_URL", "https://api.garant.ru/v2").strip()
     
     # Logging
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")

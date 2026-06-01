@@ -65,6 +65,9 @@ class GarantClient:
             elif response.status_code == 404:
                 logger.warning(f"Not found (404) for {endpoint}")
                 return {"error": "Not found", "status": 404}
+            elif response.status_code == 403:
+                logger.warning(f"Forbidden (403) for {endpoint}")
+                return {"error": "Forbidden or not found", "status": 403}
             elif response.status_code == 400:
                 logger.warning(f"Bad request (400) for {endpoint}: {response.text[:200]}")
                 return {"error": "Bad request", "status": 400, "details": response.text[:200]}
