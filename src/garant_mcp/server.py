@@ -28,6 +28,11 @@ from .tools import (
     list_saved_documents,
     create_case,
     copy_template_file,
+    save_to_case_tool,
+    list_cases_tool,
+    get_latest_case_tool,
+    copy_docx_to_case_tool,
+    create_case_description,
 )
 from .resources import (
     get_document_resource,
@@ -221,6 +226,64 @@ async def copy_template_file_tool(
 ) -> str:
     """Copy template file to destination."""
     return await copy_template_file(template_name, destination)
+
+
+@mcp.tool()
+async def save_to_case_tool_wrapper(
+    content: str,
+    case_path: str,
+    filename: str,
+    subfolder: str = "служебное для агента",
+) -> str:
+    """Save document to specific case subfolder.
+    
+    Use this to save research results, documents, and intermediate files
+    into the correct case folder structure.
+    """
+    return await save_to_case_tool(content, case_path, filename, subfolder)
+
+
+@mcp.tool()
+async def list_cases_tool_wrapper() -> str:
+    """List all case folders.
+    
+    Returns JSON with case names and paths.
+    """
+    return await list_cases_tool()
+
+
+@mcp.tool()
+async def get_latest_case_tool_wrapper() -> str:
+    """Get the most recently created case folder.
+    
+    Useful when you need to continue working on the last case.
+    """
+    return await get_latest_case_tool()
+
+
+@mcp.tool()
+async def copy_docx_to_case_tool_wrapper(
+    source_path: str,
+    case_path: str,
+    new_filename: str = None,
+) -> str:
+    """Copy DOCX file to case result folder.
+    
+    Use this to move generated DOCX documents into the case result folder.
+    """
+    return await copy_docx_to_case_tool(source_path, case_path, new_filename)
+
+
+@mcp.tool()
+async def create_case_description_tool(
+    case_path: str,
+    description: str,
+) -> str:
+    """Create case description in 'исходные данные' folder.
+    
+    Save the original user request and context here.
+    """
+    return await create_case_description(case_path, description)
 
 
 # === Resources Registration ===

@@ -8,7 +8,9 @@ from .client import GarantClient
 from .config import Config
 from .file_tools import (
     save_document, load_document, list_documents,
-    create_case_folder, copy_template, create_log
+    create_case_folder, copy_template, create_log,
+    save_to_case, list_cases, get_latest_case, copy_docx_to_case,
+    CASES_ROOT,
 )
 
 logger = logging.getLogger(__name__)
@@ -470,4 +472,147 @@ async def copy_template_file(template_name: str, destination: str) -> str:
         return f"Template copied to: {dest_path}"
     except Exception as e:
         logger.error(f"Copy template error: {e}")
+        return f"Error: {str(e)}"
+
+
+async def save_to_case_tool(
+    content: str,
+    case_path: str,
+    filename: str,
+    subfolder: str = "служебное для агента",
+) -> str:
+    """Save document to specific case subfolder.
+    
+    Args:
+        content: Document content.
+        case_path: Full path to case folder (e.g., 'кейсы/Возврат_автомобиля_дилеру_2026-06-01').
+        filename: File name.
+        subfolder: Target subfolder - 'исходные данные', 'результат', or 'служебное для агента'.
+    
+    Returns:
+        Path to saved file.
+    """
+    try:
+        filepath = save_to_case(content, case_path, filename, subfolder)
+        create_log(case_path, f"Saved to {subfolder}: {filename}")
+        return f"Document saved to: {filepath}"
+    except Exception as e:
+        logger.error(f"Save to case error: {e}")
+        return f"Error: {str(e)}"
+
+
+async def list_cases_tool() -> str:
+    """List all case folders.
+    
+    Returns:
+        JSON string with case list.
+    """
+    try:
+        cases = list_cases()
+        return json.dumps({
+            "cases": cases,
+            "count": len(cases),
+            "cases_root": str(CASES_ROOT),
+        }, ensure_ascii=False, indent=2)
+    except Exception as e:
+        logger.error(f"List cases error: {e}")
+        return json.dumps({"error": str(e)}, ensure_ascii=False)
+
+
+async def get_latest_case_tool() -> str:
+    """Get the most recently created case folder.
+    
+    Returns:
+        Path to latest case folder.
+    """
+    try:
+        latest = get_latest_case()
+        if latest is None:
+            return "No cases found"
+        return f"Latest case: {latest}"
+    except Exception as e:
+        logger.error(f"Get latest case error: {e}")
+        return f"Error: {str(e)}"
+
+
+async def copy_docx_to_case_tool(
+    source_path: str,
+    case_path: str,
+    new_filename: str = None,
+) -> str:
+    """Copy DOCX file to case result folder.
+    
+    Args:
+        source_path: Path to source DOCX file.
+        case_path: Path to case folder.
+        new_filename: Optional new filename for result.
+    
+    Returns:
+        Path to copied file.
+    """
+    try:
+        dest_path = copy_docx_to_case(source_path, case_path, new_filename)
+        return f"DOCX copied to result: {dest_path}"
+    except Exception as e:
+        logger.error(f"Copy DOCX to case error: {e}")
+        return f"Error: {str(e)}"
+
+
+async def create_case_description(
+    case_path: str,
+    description: str,
+) -> str:
+    """Create case description file in 'исходные данные'.
+    
+    Args:
+        case_path: Path to case folder.
+        description: Case description text.
+    
+    Returns:
+        Path to created file.
+    """
+    try:
+        filepath = save_to_case(
+            description,
+            case_path,
+            "Описание_запроса.txt",
+            "исходные данные",
+        )
+        return f"Case description saved: {filepath}"
+    except Exception as e:
+        logger.error(f"Create case description error: {e}")
+        return f"Error: {str(e)}"
+
+
+async def create_case(case_name: str) -> str:
+    """Create folder structure for a new case with human-readable Russian names.
+    
+    Creates structure:
+        кейсы/
+        └── описание_кейса_YYYY-MM-DD/
+            ├── исходные данные/          # User input and documents
+            ├── результат/                 # Final documents (DOCX, PDF)
+            └── служебное для агента/      # Research and intermediate results
+    
+    Args:
+        case_name: Short description in Russian (e.g., 'Возврат_автомобиля_дилеру').
+    
+    Returns:
+        Path to created case folder and structure description.
+    """
+    try:
+        case_path = create_case_folder(case_name)
+        create_log(case_name, "Case created", f"Path: {case_path}")
+        
+        # Return detailed info about structure
+        return (
+            f"КЕЙС СОЗДАН: {case_path}\n\n"
+            f"Структура папок:\n"
+            f"├── исходные данные/     - Входные документы и описание запроса\n"
+            f"├── результат/           - Готовые документы для клиента (DOCX)\n"
+            f"└── служебное для агента/ - Исследования, поиски, промежуточные результаты\n\n"
+            f"Для сохранения файлов используй save_to_case_tool с case_path='{case_path}'"
+        )
+    except Exception as e:
+        logger.error(f"Create case error: {e}")
         return f"Error: {str(e)}"
