@@ -40,10 +40,14 @@ ENV/
 # Cache and exports
 .cache/
 exports/
+results/
 *.rtf
 *.pdf
 *.odt
 *.png
+*.docx
+*.txt
+*.html
 
 # Logs
 logs/
