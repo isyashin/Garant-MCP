@@ -1,5 +1,6 @@
 """HTTP client for Garant API."""
 
+import asyncio
 import httpx
 import base64
 import logging
@@ -36,8 +37,9 @@ class GarantClient:
         params: Optional[dict] = None,
         json_data: Optional[dict] = None,
         use_cache: bool = True,
+        max_retries: int = 3,
     ) -> dict[str, Any]:
-        """Make HTTP request with caching and error handling."""
+        """Make HTTP request with caching, retry logic, and error handling."""
         cache_key = endpoint.replace("/", "_")
         
         # Try cache for GET requests
@@ -47,53 +49,67 @@ class GarantClient:
                 logger.debug(f"Cache hit for {endpoint}")
                 return cached
         
-        try:
-            if method == "GET":
-                response = await self.client.get(endpoint, params=params)
-            elif method == "POST":
-                response = await self.client.post(endpoint, json=json_data)
-            else:
-                raise ValueError(f"Unsupported method: {method}")
-            
-            # Handle errors
-            if response.status_code == 503:
-                logger.error(f"Authentication error (503) for {endpoint}")
-                raise Exception("Authentication error: Invalid token (503)")
-            elif response.status_code == 401:
-                logger.error(f"Unauthorized (401) for {endpoint}")
-                raise Exception("Unauthorized: Check your token")
-            elif response.status_code == 404:
-                logger.warning(f"Not found (404) for {endpoint}")
-                return {"error": "Not found", "status": 404}
-            elif response.status_code == 403:
-                logger.warning(f"Forbidden (403) for {endpoint}")
-                return {"error": "Forbidden or not found", "status": 403}
-            elif response.status_code == 400:
-                logger.warning(f"Bad request (400) for {endpoint}: {response.text[:200]}")
-                return {"error": "Bad request", "status": 400, "details": response.text[:200]}
-            elif response.status_code == 429:
-                logger.warning(f"Rate limited (429) for {endpoint}")
-                raise Exception("Rate limited: Too many requests")
-            
-            response.raise_for_status()
-            
-            # Parse JSON response
+        for attempt in range(max_retries):
             try:
-                data = response.json()
-            except Exception:
-                data = {"content": response.text, "content_type": response.headers.get("content-type")}
-            
-            # Cache successful GET responses
-            if method == "GET" and use_cache:
-                ttl = self.cache.get_ttl(cache_key) if hasattr(self.cache, 'get_ttl') else 300
-                self.cache.set(cache_key, params or {}, data, ttl)
-                logger.debug(f"Cache set for {endpoint}")
-            
-            return data
-            
-        except httpx.RequestError as e:
-            logger.error(f"Request error for {endpoint}: {str(e)}")
-            raise Exception(f"Request error: {str(e)}")
+                if method == "GET":
+                    response = await self.client.get(endpoint, params=params)
+                elif method == "POST":
+                    response = await self.client.post(endpoint, json=json_data)
+                else:
+                    raise ValueError(f"Unsupported method: {method}")
+                
+                # Handle errors
+                if response.status_code == 503:
+                    logger.error(f"Authentication error (503) for {endpoint}")
+                    raise Exception("Authentication error: Invalid token (503)")
+                elif response.status_code == 401:
+                    logger.error(f"Unauthorized (401) for {endpoint}")
+                    raise Exception("Unauthorized: Check your token")
+                elif response.status_code == 404:
+                    logger.warning(f"Not found (404) for {endpoint}")
+                    return {"error": "Not found", "status": 404}
+                elif response.status_code == 403:
+                    logger.warning(f"Forbidden (403) for {endpoint}")
+                    return {"error": "Forbidden or not found", "status": 403}
+                elif response.status_code == 400:
+                    logger.warning(f"Bad request (400) for {endpoint}: {response.text[:200]}")
+                    return {"error": "Bad request", "status": 400, "details": response.text[:200]}
+                elif response.status_code == 429:
+                    logger.warning(f"Rate limited (429) for {endpoint}")
+                    raise Exception("Rate limited: Too many requests")
+                
+                response.raise_for_status()
+                
+                # Parse JSON response
+                try:
+                    data = response.json()
+                except Exception:
+                    data = {"content": response.text, "content_type": response.headers.get("content-type")}
+                
+                # Cache successful GET responses
+                if method == "GET" and use_cache:
+                    ttl = self.cache.get_ttl(cache_key) if hasattr(self.cache, 'get_ttl') else 300
+                    self.cache.set(cache_key, params or {}, data, ttl)
+                    logger.debug(f"Cache set for {endpoint}")
+                
+                return data
+                
+            except httpx.RequestError as e:
+                if attempt < max_retries - 1:
+                    wait_time = 2 ** attempt  # Exponential backoff: 1, 2, 4 seconds
+                    logger.warning(f"Request error for {endpoint} (attempt {attempt + 1}/{max_retries}): {str(e)}. Retrying in {wait_time}s...")
+                    await asyncio.sleep(wait_time)
+                    continue
+                logger.error(f"Request error for {endpoint}: {str(e)}")
+                raise Exception(f"Request error: {str(e)}")
+            except httpx.HTTPStatusError as e:
+                status_code = e.response.status_code
+                if status_code in (502, 504) and attempt < max_retries - 1:
+                    wait_time = 2 ** attempt
+                    logger.warning(f"Server error {status_code} for {endpoint} (attempt {attempt + 1}/{max_retries}). Retrying in {wait_time}s...")
+                    await asyncio.sleep(wait_time)
+                    continue
+                raise
     
     async def _download(
         self,
