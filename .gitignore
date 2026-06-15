@@ -49,6 +49,11 @@ results/
 *.txt
 *.html
 
+# Exception: templates and index for lawyer agent
+!results/templates/
+!results/templates/*.json
+!results/templates/*.docx
+
 # Exception for cases folder
 !кейсы/**/*.docx
 !кейсы/**/*.txt

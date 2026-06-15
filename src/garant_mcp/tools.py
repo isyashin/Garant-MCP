@@ -19,6 +19,12 @@ from .file_tools import (
     copy_docx_to_case,
     CASES_ROOT,
 )
+from .template_manager import (
+    find_template,
+    list_templates,
+    render_template,
+    copy_template_to_case,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -611,3 +617,163 @@ async def create_case_description(
     except Exception as e:
         logger.error(f"Create case description error: {e}")
         return f"Error: {str(e)}"
+
+
+async def find_template_by_request_tool(request: str) -> str:
+    """Find best matching DOCX template by user request.
+
+    Args:
+        request: User request or case description.
+
+    Returns:
+        JSON with matched template name and description.
+    """
+    try:
+        template = find_template(request)
+        if template is None:
+            return json.dumps(
+                {"error": "No templates available"},
+                ensure_ascii=False,
+            )
+        return json.dumps(
+            {
+                "template": template["name"],
+                "description": template["description"],
+                "placeholders": template.get("placeholders", []),
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    except Exception as e:
+        logger.error(f"Find template error: {e}")
+        return json.dumps({"error": str(e)}, ensure_ascii=False)
+
+
+async def list_templates_tool() -> str:
+    """List available DOCX templates.
+
+    Returns:
+        JSON with template list.
+    """
+    try:
+        templates = list_templates()
+        return json.dumps(
+            {"templates": [t["name"] for t in templates], "count": len(templates)},
+            ensure_ascii=False,
+            indent=2,
+        )
+    except Exception as e:
+        logger.error(f"List templates error: {e}")
+        return json.dumps({"error": str(e)}, ensure_ascii=False)
+
+
+async def render_docx_template_tool(
+    template_name: str,
+    output_path: str,
+    placeholders_json: str,
+) -> str:
+    """Render DOCX template by replacing placeholders.
+
+    Args:
+        template_name: Name of template file in results/templates.
+        output_path: Path where to save rendered DOCX.
+        placeholders_json: JSON string with placeholder mapping.
+
+    Returns:
+        Path to rendered DOCX.
+    """
+    try:
+        placeholders = json.loads(placeholders_json)
+        path = render_template(template_name, Path(output_path), placeholders)
+        return f"Rendered DOCX: {path}"
+    except Exception as e:
+        logger.error(f"Render template error: {e}")
+        return f"Error: {str(e)}"
+
+
+async def copy_template_to_case_tool(
+    template_name: str,
+    case_path: str,
+    new_filename: Optional[str] = None,
+) -> str:
+    """Copy template DOCX to case result folder.
+
+    Args:
+        template_name: Template file name.
+        case_path: Path to case folder.
+        new_filename: Optional new filename.
+
+    Returns:
+        Path to copied template.
+    """
+    try:
+        path = copy_template_to_case(template_name, case_path, new_filename)
+        return f"Template copied to case result: {path}"
+    except Exception as e:
+        logger.error(f"Copy template to case error: {e}")
+        return f"Error: {str(e)}"
+
+
+async def search_and_cite_tool(
+    query: str,
+    topic: Optional[int] = None,
+    snippet_count: int = 3,
+) -> str:
+    """Search legislation and format citations without paid export.
+
+    Uses search_documents or get_document_snippets to find relevant norms,
+    then formats citations with links to garant.ru.
+
+    Args:
+        query: Search query.
+        topic: Optional specific document ID to search within.
+        snippet_count: Number of snippets to request when topic is given.
+
+    Returns:
+        JSON with search results and formatted citations.
+    """
+    try:
+        client = _get_client()
+        results: list[dict] = []
+
+        if topic is not None:
+            snippets = await client.get_snippets(text=query, topic=topic)
+            for item in snippets.get("snippets", [])[:snippet_count]:
+                entry = item.get("entry")
+                ancestors = item.get("ancestors", [])
+                title = ancestors[-1]["title"] if ancestors else ""
+                results.append(
+                    {
+                        "type": "snippet",
+                        "topic": topic,
+                        "entry": entry,
+                        "title": title,
+                        "url": f"https://internet.garant.ru/#/document/{topic}/entry/{entry}",
+                    }
+                )
+        else:
+            search_result = await client.search_documents(text=query, page=1)
+            for doc in search_result.get("documents", [])[:snippet_count]:
+                topic_id = doc.get("topic")
+                results.append(
+                    {
+                        "type": "document",
+                        "topic": topic_id,
+                        "name": doc.get("name"),
+                        "url": f"https://internet.garant.ru/#/document/{topic_id}",
+                    }
+                )
+
+        return json.dumps(
+            {
+                "query": query,
+                "topic": topic,
+                "results": results,
+                "note": "Use these URLs as hyperlinks in documents. Avoid export_* tools unless user explicitly requests a file.",
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    except Exception as e:
+        logger.error(f"Search and cite error: {e}")
+        return json.dumps({"error": str(e)}, ensure_ascii=False)

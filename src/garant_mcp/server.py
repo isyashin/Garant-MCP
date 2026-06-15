@@ -33,6 +33,11 @@ from .tools import (
     get_latest_case_tool,
     copy_docx_to_case_tool,
     create_case_description,
+    find_template_by_request_tool,
+    list_templates_tool,
+    render_docx_template_tool,
+    copy_template_to_case_tool,
+    search_and_cite_tool,
 )
 from .resources import (
     get_document_resource,
@@ -289,6 +294,54 @@ async def create_case_description_tool(
     Save the original user request and context here.
     """
     return await create_case_description(case_path, description)
+
+
+@mcp.tool()
+async def find_template_by_request_tool_wrapper(request: str) -> str:
+    """Find best matching DOCX template by user request."""
+    return await find_template_by_request_tool(request)
+
+
+@mcp.tool()
+async def list_templates_tool_wrapper() -> str:
+    """List available DOCX templates."""
+    return await list_templates_tool()
+
+
+@mcp.tool()
+async def render_docx_template_tool_wrapper(
+    template_name: str,
+    output_path: str,
+    placeholders_json: str,
+) -> str:
+    """Render DOCX template by replacing placeholders."""
+    return await render_docx_template_tool(
+        template_name, output_path, placeholders_json
+    )
+
+
+@mcp.tool()
+async def copy_template_to_case_tool_wrapper(
+    template_name: str,
+    case_path: str,
+    new_filename: Optional[str] = None,
+) -> str:
+    """Copy template DOCX to case result folder."""
+    return await copy_template_to_case_tool(template_name, case_path, new_filename)
+
+
+@mcp.tool()
+async def search_and_cite_tool_wrapper(
+    query: str,
+    topic: Optional[int] = None,
+    snippet_count: int = 3,
+) -> str:
+    """Search legislation and format citations without paid export.
+
+    Use this instead of export_document_* tools unless user explicitly
+    requests a downloaded file.
+    """
+    return await search_and_cite_tool(query, topic, snippet_count)
 
 
 # === Resources Registration ===

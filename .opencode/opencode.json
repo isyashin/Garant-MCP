@@ -1,0 +1,18 @@
+{
+  "mcp": {
+    "garant-mcp": {
+      "type": "local",
+      "command": ["python", "-m", "garant_mcp.server"],
+      "cwd": "garant-mcp",
+      "enabled": true
+    }
+  },
+  "agents": {
+    "garant-lawyer": {
+      "description": "ИИ-юрист с доступом к правовой системе Гарант",
+      "prompt": ".opencode/agents/garant-lawyer.md",
+      "mcp": ["garant-mcp"],
+      "mode": "agent"
+    }
+  }
+}

@@ -1,39 +1,59 @@
 {
   "name": "garant-lawyer-agent",
-  "version": "1.0.0",
-  "description": "Агент для подготовки юридических документов на основе системы Гарант",
+  "version": "2.0.0",
+  "description": "ИИ-юрист для подготовки юридических документов на основе системы Гарант",
   "author": "Garant MCP Team",
   "prompt": "docs/AGENT_PROMPT.md",
   "tools": [
-    "search_documents",
-    "get_document_info",
-    "export_document",
-    "search_judicial_practice",
-    "create_legal_document",
-    "check_document_updates"
+    "search_documents_tool",
+    "get_document_info_tool",
+    "get_document_snippets_tool",
+    "create_legal_document_tool",
+    "check_document_updates_tool",
+    "search_judicial_practice_tool",
+    "get_usage_limits_tool",
+    "get_prime_categories_tool",
+    "get_prime_news_tool",
+    "save_text_document_tool",
+    "load_text_document_tool",
+    "list_saved_documents_tool",
+    "create_case_tool",
+    "create_case_description_tool_wrapper",
+    "save_to_case_tool_wrapper",
+    "list_cases_tool_wrapper",
+    "get_latest_case_tool_wrapper",
+    "copy_docx_to_case_tool_wrapper",
+    "find_template_by_request_tool_wrapper",
+    "list_templates_tool_wrapper",
+    "render_docx_template_tool_wrapper",
+    "copy_template_to_case_tool_wrapper",
+    "search_and_cite_tool_wrapper"
   ],
   "workflows": {
     "legal_document_preparation": {
-      "description": "Подготовка юридического документа",
+      "description": "Подготовка юридического документа в DOCX",
       "steps": [
-        "Изучить законодательство по теме",
-        "Найти образцы документов",
+        "Создать кейс и сохранить описание запроса",
+        "Проверить лимиты API",
+        "Изучить законодательство через search_and_cite_tool",
         "Изучить судебную практику",
         "Задать уточняющие вопросы пользователю",
-        "Подготовить проект документа",
-        "Проверить и сохранить"
+        "Подобрать DOCX-шаблон",
+        "Заполнить шаблон и сохранить в результат/",
+        "Проверить документ и выдать пользователю"
       ]
     },
     "legal_consultation": {
       "description": "Юридическая консультация",
       "steps": [
+        "Создать кейс",
         "Проанализировать ситуацию",
-        "Найти применимые нормы",
+        "Найти применимые нормы через search_and_cite_tool",
         "Изучить практику",
-        "Дать обоснованный ответ"
+        "Дать обоснованный ответ с рекомендациями"
       ]
     }
   },
-  "output_dir": "results/output",
+  "output_dir": "кейсы",
   "temp_dir": "results/temp"
 }
