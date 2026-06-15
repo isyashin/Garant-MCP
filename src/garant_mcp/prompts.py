@@ -4,7 +4,7 @@
 async def legal_complaint_template() -> str:
     """
     Prompt: Template for creating a legal complaint with references to laws.
-    
+
     Use this when the user wants to draft a complaint to authorities.
     """
     return """Вы юрист. Помогите составить жалобу в жилищную инспекцию.
@@ -41,7 +41,7 @@ async def legal_complaint_template() -> str:
 async def contract_review_template() -> str:
     """
     Prompt: Template for reviewing a contract with legal analysis.
-    
+
     Use this when the user wants to review or analyze a contract.
     """
     return """Вы юрист. Проанализируйте договор.
@@ -78,7 +78,7 @@ async def contract_review_template() -> str:
 async def document_analysis_template() -> str:
     """
     Prompt: Template for analyzing a specific legal document.
-    
+
     Use this when the user wants to analyze a law or regulation.
     """
     return """Вы юрист. Проанализируйте нормативный документ.

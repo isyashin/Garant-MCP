@@ -1,9 +1,9 @@
 """Garant MCP Server - Main entry point."""
 
 import sys
-import json
 import logging
 from pathlib import Path
+from typing import Optional
 from mcp.server.fastmcp import FastMCP
 from .config import Config
 from .tools import (
@@ -63,7 +63,9 @@ log_dir.mkdir(exist_ok=True)
 # Add file handler
 file_handler = logging.FileHandler(log_dir / "garant-mcp.log", encoding="utf-8")
 file_handler.setLevel(logging.DEBUG)
-file_handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+file_handler.setFormatter(
+    logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+)
 logger.addHandler(file_handler)
 
 # Initialize FastMCP server
@@ -71,6 +73,7 @@ mcp = FastMCP("garant-mcp")
 
 
 # === Tools Registration ===
+
 
 @mcp.tool()
 async def search_documents_tool(
@@ -98,7 +101,9 @@ async def get_document_snippets_tool(text: str, topic: int) -> str:
 
 
 @mcp.tool()
-async def create_legal_document_tool(text: str, base_url: str = "https://internet.garant.ru") -> str:
+async def create_legal_document_tool(
+    text: str, base_url: str = "https://internet.garant.ru"
+) -> str:
     """Create a legal document with hyperlinks to laws."""
     return await create_legal_document(text, base_url)
 
@@ -164,7 +169,7 @@ async def get_prime_news_tool(
 async def search_judicial_practice_tool(
     text: str,
     count: int = 10,
-    kind: list[str] = None,
+    kind: Optional[list[str]] = None,
 ) -> str:
     """Search judicial practice (Sutyazhnik)."""
     return await search_judicial_practice(text, count, kind)
@@ -236,7 +241,7 @@ async def save_to_case_tool_wrapper(
     subfolder: str = "служебное для агента",
 ) -> str:
     """Save document to specific case subfolder.
-    
+
     Use this to save research results, documents, and intermediate files
     into the correct case folder structure.
     """
@@ -246,7 +251,7 @@ async def save_to_case_tool_wrapper(
 @mcp.tool()
 async def list_cases_tool_wrapper() -> str:
     """List all case folders.
-    
+
     Returns JSON with case names and paths.
     """
     return await list_cases_tool()
@@ -255,7 +260,7 @@ async def list_cases_tool_wrapper() -> str:
 @mcp.tool()
 async def get_latest_case_tool_wrapper() -> str:
     """Get the most recently created case folder.
-    
+
     Useful when you need to continue working on the last case.
     """
     return await get_latest_case_tool()
@@ -265,10 +270,10 @@ async def get_latest_case_tool_wrapper() -> str:
 async def copy_docx_to_case_tool_wrapper(
     source_path: str,
     case_path: str,
-    new_filename: str = None,
+    new_filename: Optional[str] = None,
 ) -> str:
     """Copy DOCX file to case result folder.
-    
+
     Use this to move generated DOCX documents into the case result folder.
     """
     return await copy_docx_to_case_tool(source_path, case_path, new_filename)
@@ -280,13 +285,14 @@ async def create_case_description_tool(
     description: str,
 ) -> str:
     """Create case description in 'исходные данные' folder.
-    
+
     Save the original user request and context here.
     """
     return await create_case_description(case_path, description)
 
 
 # === Resources Registration ===
+
 
 @mcp.resource("garant://document/{topic}")
 async def document_resource(topic: str) -> str:
@@ -307,6 +313,7 @@ async def prime_categories_resource() -> str:
 
 
 # === Prompts Registration ===
+
 
 @mcp.prompt()
 async def legal_complaint() -> str:
@@ -336,13 +343,13 @@ def main():
         for error in errors:
             print(f"  - {error}", file=sys.stderr)
         sys.exit(1)
-    
+
     logger.info(
         f"Starting Garant MCP Server | "
         f"Base URL: {Config.GARANT_BASE_URL} | "
         f"Log Level: {Config.LOG_LEVEL}"
     )
-    
+
     # Run server with stdio transport (for opencode)
     mcp.run(transport="stdio")
 

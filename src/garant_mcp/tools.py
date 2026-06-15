@@ -7,9 +7,16 @@ from typing import Optional
 from .client import GarantClient
 from .config import Config
 from .file_tools import (
-    save_document, load_document, list_documents,
-    create_case_folder, copy_template, create_log,
-    save_to_case, list_cases, get_latest_case, copy_docx_to_case,
+    save_document,
+    load_document,
+    list_documents,
+    create_case_folder,
+    copy_template,
+    create_log,
+    save_to_case,
+    list_cases,
+    get_latest_case,
+    copy_docx_to_case,
     CASES_ROOT,
 )
 
@@ -31,7 +38,7 @@ async def search_documents(
 ) -> str:
     """
     Search for legal documents in Garant database.
-    
+
     Args:
         text: Search query (max 16KB). Can be plain text or query language expression.
         env: Search environment - 'internet' (main) or 'arbitr' (court practice).
@@ -39,7 +46,7 @@ async def search_documents(
         sort_order: Sort order - 0=descending, 1=ascending.
         page: Page number (50 documents per page).
         is_query: Use query language (e.g., 'MorphoText(НДФЛ) & Type(Приказ)').
-    
+
     Returns:
         JSON string with search results including documents list and total pages.
     """
@@ -61,10 +68,10 @@ async def search_documents(
 async def get_document_info(topic: int) -> str:
     """
     Get detailed information about a specific document.
-    
+
     Args:
         topic: Internal document ID (integer).
-    
+
     Returns:
         JSON string with document metadata (name, status, type, dates, etc.).
     """
@@ -82,11 +89,11 @@ async def get_document_snippets(
 ) -> str:
     """
     Get text snippets (occurrences) within a specific document.
-    
+
     Args:
         text: Search text to find within the document.
         topic: Document ID to search in.
-    
+
     Returns:
         JSON string with snippets showing relevance and context.
     """
@@ -104,13 +111,13 @@ async def create_legal_document(
 ) -> str:
     """
     Create a legal document with hyperlinks to laws.
-    
+
     Automatically finds references to laws and adds clickable links.
-    
+
     Args:
         text: Document text (plain text or HTML, max 20MB).
         base_url: Base URL for generated links (default: internet.garant.ru).
-    
+
     Returns:
         HTML string with embedded hyperlinks to relevant laws.
     """
@@ -129,12 +136,12 @@ async def check_document_updates(
 ) -> str:
     """
     Check if documents have been modified since a specific date.
-    
+
     Args:
         topics: List of document IDs to check (max 100).
         mod_date: Check for changes since this date (YYYY-MM-DD, not earlier than 2018-01-01).
         need_events: Include detailed modification history.
-    
+
     Returns:
         JSON string with modification status for each document.
     """
@@ -153,10 +160,10 @@ async def check_document_updates(
 async def export_document_rtf(topic: int) -> str:
     """
     Export a document to RTF format.
-    
+
     Args:
         topic: Document ID to export.
-    
+
     Returns:
         Path to downloaded RTF file.
     """
@@ -173,10 +180,10 @@ async def export_document_rtf(topic: int) -> str:
 async def export_document_pdf(topic: int) -> str:
     """
     Export a document to PDF format.
-    
+
     Args:
         topic: Document ID to export.
-    
+
     Returns:
         Path to downloaded PDF file.
     """
@@ -193,10 +200,10 @@ async def export_document_pdf(topic: int) -> str:
 async def export_document_odt(topic: int) -> str:
     """
     Export a document to ODT format.
-    
+
     Args:
         topic: Document ID to export.
-    
+
     Returns:
         Path to downloaded ODT file.
     """
@@ -213,10 +220,10 @@ async def export_document_odt(topic: int) -> str:
 async def export_document_html(topic: int) -> str:
     """
     Export a document to HTML format.
-    
+
     Args:
         topic: Document ID to export.
-    
+
     Returns:
         JSON string with HTML pages of the document.
     """
@@ -231,11 +238,11 @@ async def export_document_html(topic: int) -> str:
 async def export_block_html(topic: int, entry: int) -> str:
     """
     Export a specific block (article, paragraph) to HTML.
-    
+
     Args:
         topic: Document ID.
         entry: Block ID (e.g., 36 for Article 36, 3601 for paragraph 1 of Article 36).
-    
+
     Returns:
         JSON string with HTML content of the block.
     """
@@ -250,7 +257,7 @@ async def export_block_html(topic: int, entry: int) -> str:
 async def get_prime_categories() -> str:
     """
     Get PRIME news categories.
-    
+
     Returns:
         JSON string with category tree.
     """
@@ -270,13 +277,13 @@ async def get_prime_news(
 ) -> str:
     """
     Get PRIME news feed.
-    
+
     Args:
         categories: List of category IDs from get_prime_categories.
         from_date: Start date (YYYY-MM-DD).
         to_date: End date (YYYY-MM-DD, max 10 days from from_date).
         sort: Sort order - 1=by news date (default), 2=by document adoption date.
-    
+
     Returns:
         JSON string with news items.
     """
@@ -300,12 +307,12 @@ async def search_judicial_practice(
 ) -> str:
     """
     Search judicial practice (Sutyazhnik).
-    
+
     Args:
         text: Search query text (1-1000 characters).
         count: Number of results to return.
         kind: Document types - ['301'] for courts, ['302'] for arbitration, ['303'] for company cases.
-    
+
     Returns:
         JSON string with judicial practice documents, norms, and court decisions.
     """
@@ -326,7 +333,7 @@ async def search_judicial_practice(
 async def get_usage_limits() -> str:
     """
     Check remaining API usage limits.
-    
+
     Returns:
         JSON string with remaining quotas for all endpoint types.
     """
@@ -341,10 +348,10 @@ async def get_usage_limits() -> str:
 async def download_image(object_id: int) -> str:
     """
     Download an image from a document.
-    
+
     Args:
         object_id: Image object ID (found in HTML content).
-    
+
     Returns:
         Path to downloaded image file.
     """
@@ -361,10 +368,10 @@ async def download_image(object_id: int) -> str:
 async def download_formula(text: str) -> str:
     """
     Download a formula as an image.
-    
+
     Args:
         text: Formula text.
-    
+
     Returns:
         Path to downloaded formula image.
     """
@@ -378,14 +385,16 @@ async def download_formula(text: str) -> str:
         return f"Error: {str(e)}"
 
 
-async def save_text_document(content: str, filename: str, category: str = "output") -> str:
+async def save_text_document(
+    content: str, filename: str, category: str = "output"
+) -> str:
     """Save text document to results directory.
-    
+
     Args:
         content: Document content.
         filename: File name.
         category: Directory category (cases/templates/documents/practice/client/output).
-    
+
     Returns:
         Path to saved file.
     """
@@ -400,11 +409,11 @@ async def save_text_document(content: str, filename: str, category: str = "outpu
 
 async def load_text_document(filename: str, category: str = "output") -> str:
     """Load text document from results directory.
-    
+
     Args:
         filename: File name.
         category: Directory category.
-    
+
     Returns:
         Document content or error message.
     """
@@ -420,38 +429,54 @@ async def load_text_document(filename: str, category: str = "output") -> str:
 
 async def list_saved_documents(category: str = "output") -> str:
     """List documents in results directory.
-    
+
     Args:
         category: Directory category.
-    
+
     Returns:
         JSON string with document list.
     """
     try:
         documents = list_documents(category)
-        return json.dumps({
-            "category": category,
-            "documents": documents,
-            "count": len(documents)
-        }, ensure_ascii=False, indent=2)
+        return json.dumps(
+            {"category": category, "documents": documents, "count": len(documents)},
+            ensure_ascii=False,
+            indent=2,
+        )
     except Exception as e:
         logger.error(f"List documents error: {e}")
         return json.dumps({"error": str(e)}, ensure_ascii=False)
 
 
 async def create_case(case_name: str) -> str:
-    """Create folder structure for a new case.
-    
+    """Create folder structure for a new case with human-readable Russian names.
+
+    Creates structure:
+        кейсы/
+        └── описание_кейса_YYYY-MM-DD/
+            ├── исходные данные/          # User input and documents
+            ├── результат/                 # Final documents (DOCX, PDF)
+            └── служебное для агента/      # Research and intermediate results
+
     Args:
-        case_name: Name of the case.
-    
+        case_name: Short description in Russian (e.g., 'Возврат_автомобиля_дилеру').
+
     Returns:
-        Path to created case folder.
+        Path to created case folder and structure description.
     """
     try:
         case_path = create_case_folder(case_name)
-        create_log(case_name, "Case folder created", f"Path: {case_path}")
-        return f"Case folder created: {case_path}"
+        create_log(case_name, "Case created", f"Path: {case_path}")
+
+        # Return detailed info about structure
+        return (
+            f"КЕЙС СОЗДАН: {case_path}\n\n"
+            f"Структура папок:\n"
+            f"├── исходные данные/     - Входные документы и описание запроса\n"
+            f"├── результат/           - Готовые документы для клиента (DOCX)\n"
+            f"└── служебное для агента/ - Исследования, поиски, промежуточные результаты\n\n"
+            f"Для сохранения файлов используй save_to_case_tool с case_path='{case_path}'"
+        )
     except Exception as e:
         logger.error(f"Create case error: {e}")
         return f"Error: {str(e)}"
@@ -459,11 +484,11 @@ async def create_case(case_name: str) -> str:
 
 async def copy_template_file(template_name: str, destination: str) -> str:
     """Copy template file to destination.
-    
+
     Args:
         template_name: Source template file name.
         destination: Destination path.
-    
+
     Returns:
         Path to copied file.
     """
@@ -482,13 +507,13 @@ async def save_to_case_tool(
     subfolder: str = "служебное для агента",
 ) -> str:
     """Save document to specific case subfolder.
-    
+
     Args:
         content: Document content.
         case_path: Full path to case folder (e.g., 'кейсы/Возврат_автомобиля_дилеру_2026-06-01').
         filename: File name.
         subfolder: Target subfolder - 'исходные данные', 'результат', or 'служебное для агента'.
-    
+
     Returns:
         Path to saved file.
     """
@@ -503,17 +528,21 @@ async def save_to_case_tool(
 
 async def list_cases_tool() -> str:
     """List all case folders.
-    
+
     Returns:
         JSON string with case list.
     """
     try:
         cases = list_cases()
-        return json.dumps({
-            "cases": cases,
-            "count": len(cases),
-            "cases_root": str(CASES_ROOT),
-        }, ensure_ascii=False, indent=2)
+        return json.dumps(
+            {
+                "cases": cases,
+                "count": len(cases),
+                "cases_root": str(CASES_ROOT),
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
     except Exception as e:
         logger.error(f"List cases error: {e}")
         return json.dumps({"error": str(e)}, ensure_ascii=False)
@@ -521,7 +550,7 @@ async def list_cases_tool() -> str:
 
 async def get_latest_case_tool() -> str:
     """Get the most recently created case folder.
-    
+
     Returns:
         Path to latest case folder.
     """
@@ -538,15 +567,15 @@ async def get_latest_case_tool() -> str:
 async def copy_docx_to_case_tool(
     source_path: str,
     case_path: str,
-    new_filename: str = None,
+    new_filename: Optional[str] = None,
 ) -> str:
     """Copy DOCX file to case result folder.
-    
+
     Args:
         source_path: Path to source DOCX file.
         case_path: Path to case folder.
         new_filename: Optional new filename for result.
-    
+
     Returns:
         Path to copied file.
     """
@@ -563,11 +592,11 @@ async def create_case_description(
     description: str,
 ) -> str:
     """Create case description file in 'исходные данные'.
-    
+
     Args:
         case_path: Path to case folder.
         description: Case description text.
-    
+
     Returns:
         Path to created file.
     """
@@ -581,38 +610,4 @@ async def create_case_description(
         return f"Case description saved: {filepath}"
     except Exception as e:
         logger.error(f"Create case description error: {e}")
-        return f"Error: {str(e)}"
-
-
-async def create_case(case_name: str) -> str:
-    """Create folder structure for a new case with human-readable Russian names.
-    
-    Creates structure:
-        кейсы/
-        └── описание_кейса_YYYY-MM-DD/
-            ├── исходные данные/          # User input and documents
-            ├── результат/                 # Final documents (DOCX, PDF)
-            └── служебное для агента/      # Research and intermediate results
-    
-    Args:
-        case_name: Short description in Russian (e.g., 'Возврат_автомобиля_дилеру').
-    
-    Returns:
-        Path to created case folder and structure description.
-    """
-    try:
-        case_path = create_case_folder(case_name)
-        create_log(case_name, "Case created", f"Path: {case_path}")
-        
-        # Return detailed info about structure
-        return (
-            f"КЕЙС СОЗДАН: {case_path}\n\n"
-            f"Структура папок:\n"
-            f"├── исходные данные/     - Входные документы и описание запроса\n"
-            f"├── результат/           - Готовые документы для клиента (DOCX)\n"
-            f"└── служебное для агента/ - Исследования, поиски, промежуточные результаты\n\n"
-            f"Для сохранения файлов используй save_to_case_tool с case_path='{case_path}'"
-        )
-    except Exception as e:
-        logger.error(f"Create case error: {e}")
         return f"Error: {str(e)}"
