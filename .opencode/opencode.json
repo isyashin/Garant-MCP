@@ -1,18 +1,17 @@
 {
+  "$schema": "https://opencode.ai/config.json",
   "mcp": {
     "garant-mcp": {
       "type": "local",
-      "command": ["python", "-m", "garant_mcp.server"],
-      "cwd": "garant-mcp",
+      "command": ["D:\\ГАРАНТ\\garant-mcp\\.venv\\Scripts\\python.exe", "-m", "garant_mcp.server"],
       "enabled": true
     }
   },
-  "agents": {
+  "agent": {
     "garant-lawyer": {
       "description": "ИИ-юрист с доступом к правовой системе Гарант",
-      "prompt": ".opencode/agents/garant-lawyer.md",
-      "mcp": ["garant-mcp"],
-      "mode": "agent"
+      "prompt": "{file:./agents/garant-lawyer.md}",
+      "mode": "primary"
     }
   }
 }

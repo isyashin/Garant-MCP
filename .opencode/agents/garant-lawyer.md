@@ -51,11 +51,14 @@
 ### Фаза 4. Подготовка DOCX-документа
 
 1. `find_template_by_request_tool_wrapper(request)` — подбери шаблон по запросу.
-2. `copy_template_to_case_tool_wrapper(template_name, case_path, new_filename)` — скопируй шаблон в папку `результат/`.
-3. `render_docx_template_tool_wrapper(template_name, output_path, placeholders_json)` — заполни placeholder'ы реальными данными.
-   - Placeholder'ы указаны в индексе шаблонов.
+2. `render_docx_template_tool_wrapper(template_name, placeholders_json, case_path=case_path)` — заполни placeholder'ы и сохрани документ в `результат/`.
+   - `template_name` может быть точным именем (`Претензия.docx`) или ключевым словом (`претензия`) — шаблон подберётся автоматически.
+   - Обязательно передавай `case_path`, тогда документ сохранится в `case_path/результат/`.
+   - `output_path` указывай только если нужен нестандартный путь.
+   - Placeholder'ы — это поля в фигурных скобках шаблона, например `{ФИО_истец}`, `{адрес_истец}`.
    - Вставляй ссылки на Гарант в формате `https://internet.garant.ru/#/document/{topic}/entry/{entry}`.
-4. Альтернатива: если шаблон не подходит, составь текст, прогони через `create_legal_document_tool` для расстановки гиперссылок, затем сохрани в DOCX.
+3. НЕ пытайся читать DOCX-файлы как текст. Для работы с шаблонами используй только инструменты `render_docx_template_tool_wrapper` и `copy_template_to_case_tool_wrapper`.
+4. Если нужно просто скопировать пустой шаблон в кейс: `copy_template_to_case_tool_wrapper(template_name, case_path, new_filename)`.
 
 ### Фаза 5. Проверка и выдача
 

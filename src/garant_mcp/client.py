@@ -18,7 +18,7 @@ class GarantClient:
     def __init__(self, token: Optional[str] = None, base_url: Optional[str] = None):
         self.token = token or Config.GARANT_TOKEN
         self.base_url = base_url or Config.GARANT_BASE_URL
-        self.cache = GarantCache()
+        self.cache = GarantCache(Config.CACHE_DIR)
         self.headers = {
             "Authorization": f"Bearer {self.token}",
             "Accept": "application/json",
@@ -61,7 +61,7 @@ class GarantClient:
             cached = self.cache.get(cache_key, params or {})
             if cached is not None:
                 logger.debug(f"Cache hit for {endpoint}")
-                return cached
+                return cached  # type: ignore[no-any-return]
 
         for attempt in range(max_retries):
             try:
@@ -115,7 +115,7 @@ class GarantClient:
                     self.cache.set(cache_key, params or {}, data, ttl)
                     logger.debug(f"Cache set for {endpoint}")
 
-                return data
+                return data  # type: ignore[no-any-return]
 
             except httpx.RequestError as e:
                 if attempt < max_retries - 1:

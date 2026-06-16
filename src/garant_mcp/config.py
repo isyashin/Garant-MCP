@@ -1,13 +1,22 @@
 """Configuration for Garant MCP Server."""
 
 import os
+import logging
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
-env_path = Path(__file__).parent.parent.parent / ".env"
+# Base directory is the project root (parent of src/)
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+# Load environment variables from .env file in project root
+env_path = BASE_DIR / ".env"
+logger = logging.getLogger(__name__)
+
 if env_path.exists():
     load_dotenv(env_path)
+    logger.debug(f"Loaded .env from {env_path}")
+else:
+    logger.warning(f".env file not found at {env_path}")
 
 
 class Config:
@@ -19,7 +28,7 @@ class Config:
 
     # Logging
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
-    LOG_FILE = os.getenv("LOG_FILE", "logs/garant-mcp.log")
+    LOG_FILE = os.getenv("LOG_FILE", str(BASE_DIR / "logs" / "garant-mcp.log"))
 
     # Cache TTL (in seconds)
     CACHE_TTL_TOPIC = int(os.getenv("CACHE_TTL_TOPIC", "7200"))  # 2 hours
@@ -29,10 +38,10 @@ class Config:
     CACHE_TTL_SEARCH = int(os.getenv("CACHE_TTL_SEARCH", "900"))  # 15 minutes
 
     # Cache directory
-    CACHE_DIR = os.getenv("CACHE_DIR", ".cache")
+    CACHE_DIR = str(BASE_DIR / os.getenv("CACHE_DIR", ".cache"))
 
     # Export directory for downloaded files
-    EXPORT_DIR = os.getenv("EXPORT_DIR", "exports")
+    EXPORT_DIR = str(BASE_DIR / os.getenv("EXPORT_DIR", "exports"))
 
     @classmethod
     def validate(cls) -> list[str]:

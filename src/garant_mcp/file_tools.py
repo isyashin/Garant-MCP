@@ -5,11 +5,13 @@ from pathlib import Path
 from datetime import datetime
 from typing import Optional
 
+from .config import BASE_DIR
+
 # Основная папка для кейсов (на русском, понятная человеку)
-CASES_ROOT = Path("кейсы")
+CASES_ROOT = BASE_DIR / "кейсы"
 
 # Старые папки (для обратной совместимости)
-RESULTS_DIR = Path("results")
+RESULTS_DIR = BASE_DIR / "results"
 CASES_DIR = RESULTS_DIR / "cases"
 TEMPLATES_DIR = RESULTS_DIR / "templates"
 DOCUMENTS_DIR = RESULTS_DIR / "documents"
@@ -25,6 +27,7 @@ for dir_path in [
     PRACTICE_DIR,
     CLIENT_DATA_DIR,
     OUTPUT_DIR,
+    CASES_ROOT,
 ]:
     dir_path.mkdir(parents=True, exist_ok=True)
 

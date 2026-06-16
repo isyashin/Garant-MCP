@@ -3,8 +3,11 @@
 import time
 import json
 import hashlib
-from typing import Any, Optional, Union
+from typing import Any, Optional
 from pathlib import Path
+
+
+from .config import BASE_DIR
 
 
 class SimpleCache:
@@ -12,7 +15,7 @@ class SimpleCache:
 
     def __init__(self, cache_dir: Optional[str] = None):
         self.cache: dict[str, tuple[Any, float]] = {}
-        self.cache_dir = cache_dir or ".cache"
+        self.cache_dir = cache_dir or str(BASE_DIR / ".cache")
         Path(self.cache_dir).mkdir(parents=True, exist_ok=True)
 
     def _make_key(self, endpoint: str, params: dict) -> str:
@@ -64,7 +67,7 @@ try:
         """Cache manager using diskcache."""
 
         def __init__(self, cache_dir: Optional[str] = None):
-            self.cache_dir = cache_dir or ".cache"
+            self.cache_dir = cache_dir or str(BASE_DIR / ".cache")
             Path(self.cache_dir).mkdir(parents=True, exist_ok=True)
             self.cache = Cache(self.cache_dir)
 

@@ -54,9 +54,8 @@ results/
 !results/templates/*.json
 !results/templates/*.docx
 
-# Exception for cases folder
-!кейсы/**/*.docx
-!кейсы/**/*.txt
+# Cases folder — keep structure but ignore user-generated content
+кейсы/
 
 # Logs
 logs/
@@ -71,3 +70,11 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# Temporary scripts and manual checks
+manual_api_check/
+scripts/auth_variants_check.py
+scripts/check_image_formula.py
+scripts/compare_limits_search.py
+scripts/find_documents_with_media.py
+scripts/test_formula_variants.py

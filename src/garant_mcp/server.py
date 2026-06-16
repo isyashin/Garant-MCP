@@ -2,10 +2,9 @@
 
 import sys
 import logging
-from pathlib import Path
 from typing import Optional
 from mcp.server.fastmcp import FastMCP
-from .config import Config
+from .config import Config, BASE_DIR
 from .tools import (
     search_documents,
     get_document_info,
@@ -51,27 +50,28 @@ from .prompts import (
 )
 
 # Configure logging
-logging.basicConfig(
-    level=getattr(logging, Config.LOG_LEVEL.upper(), logging.INFO),
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stderr),
-    ],
-)
+log_dir = BASE_DIR / "logs"
+log_dir.mkdir(exist_ok=True)
+log_file = log_dir / "garant-mcp.log"
+
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
+# Root logger: capture everything from all modules
+root_logger = logging.getLogger()
+root_logger.setLevel(getattr(logging, Config.LOG_LEVEL.upper(), logging.INFO))
+
+# Stream handler for stderr
+stream_handler = logging.StreamHandler(sys.stderr)
+stream_handler.setFormatter(formatter)
+root_logger.addHandler(stream_handler)
+
+# File handler for persistent logs
+file_handler = logging.FileHandler(log_file, encoding="utf-8")
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(formatter)
+root_logger.addHandler(file_handler)
 
 logger = logging.getLogger(__name__)
-
-# Create logs directory
-log_dir = Path("logs")
-log_dir.mkdir(exist_ok=True)
-
-# Add file handler
-file_handler = logging.FileHandler(log_dir / "garant-mcp.log", encoding="utf-8")
-file_handler.setLevel(logging.DEBUG)
-file_handler.setFormatter(
-    logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-)
-logger.addHandler(file_handler)
 
 # Initialize FastMCP server
 mcp = FastMCP("garant-mcp")
@@ -311,12 +311,18 @@ async def list_templates_tool_wrapper() -> str:
 @mcp.tool()
 async def render_docx_template_tool_wrapper(
     template_name: str,
-    output_path: str,
     placeholders_json: str,
+    output_path: str = "",
+    case_path: str = "",
 ) -> str:
-    """Render DOCX template by replacing placeholders."""
+    """Render DOCX template by replacing placeholders.
+
+    Provide either case_path (recommended) or explicit output_path.
+    Template name can be exact filename like 'Претензия.docx' or a keyword
+    like 'претензия' — the best matching template will be used.
+    """
     return await render_docx_template_tool(
-        template_name, output_path, placeholders_json
+        template_name, placeholders_json, output_path, case_path
     )
 
 
@@ -400,7 +406,10 @@ def main():
     logger.info(
         f"Starting Garant MCP Server | "
         f"Base URL: {Config.GARANT_BASE_URL} | "
-        f"Log Level: {Config.LOG_LEVEL}"
+        f"Log Level: {Config.LOG_LEVEL} | "
+        f"BASE_DIR: {BASE_DIR} | "
+        f".env: {BASE_DIR / '.env'} | "
+        f"Token loaded: {bool(Config.GARANT_TOKEN)}"
     )
 
     # Run server with stdio transport (for opencode)

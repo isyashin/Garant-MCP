@@ -129,7 +129,7 @@ async def create_legal_document(
     """
     try:
         result = await _get_client().create_hyperlinks(text=text, base_url=base_url)
-        return result.get("text", "")
+        return str(result.get("text", ""))
     except Exception as e:
         logger.error(f"Hyperlinks error: {e}")
         return f"Error: {str(e)}"
@@ -669,22 +669,31 @@ async def list_templates_tool() -> str:
 
 async def render_docx_template_tool(
     template_name: str,
-    output_path: str,
     placeholders_json: str,
+    output_path: str = "",
+    case_path: str = "",
 ) -> str:
     """Render DOCX template by replacing placeholders.
 
     Args:
-        template_name: Name of template file in results/templates.
-        output_path: Path where to save rendered DOCX.
+        template_name: Exact template filename (e.g. 'Претензия.docx') or
+            a request like 'претензия' to auto-resolve template.
         placeholders_json: JSON string with placeholder mapping.
+        output_path: Optional explicit output path. If empty, uses case_path.
+        case_path: Optional case folder path. Output goes to case_path/результат/.
 
     Returns:
         Path to rendered DOCX.
     """
     try:
         placeholders = json.loads(placeholders_json)
-        path = render_template(template_name, Path(output_path), placeholders)
+        out_path = Path(output_path) if output_path else None
+        path = render_template(
+            template_name,
+            output_path=out_path,
+            placeholders=placeholders,
+            case_path=case_path or None,
+        )
         return f"Rendered DOCX: {path}"
     except Exception as e:
         logger.error(f"Render template error: {e}")
